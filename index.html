@@ -124,8 +124,11 @@ html[data-theme=dark] .stage{background:#121212}
    2024 시트 치수 그대로: 행 32px (여백 행 23px), 열 B·L 23 / C 60 / D 40 / E 100 / F·G 80 / H~J 44 / K 79 */
 #capture{--r:32px;--dl:2px;background:#fff;padding:23px;width:max-content}
 .card{display:flex;border:3px solid var(--magenta);background:#fff;color:var(--ink);line-height:1;font-family:var(--font,Arial,Arimo,sans-serif)}
-.left{width:calc(200px + var(--dl));flex:none;display:flex;flex-direction:column;border-right:var(--dl) solid var(--divider)}
-.right{display:flex;flex-direction:column;margin-left:1.5px;border-left:var(--dl) solid var(--divider)}
+.left{width:200px;flex:none;display:flex;flex-direction:column}
+.right{display:flex;flex-direction:column}
+/* 이중선: 테두리 대신 막대 2개로 그려 PNG에서도 가운데 틈이 그대로 보이게 */
+.dline{flex:none;display:flex;justify-content:space-between;width:calc(var(--dl)*2 + 1.5px);background:#fff}
+.dline i{display:block;width:var(--dl);background:var(--divider)}
 .c{display:flex;align-items:center;justify-content:center;text-align:center}
 .r1{height:var(--r)}
 .dex{background:var(--grey);font-size:17.33px}
@@ -402,10 +405,11 @@ const CPM = [0,0.094,0.16639787,0.21573247,0.25572005,0.29024988,0.3210876,0.349
   0.6121573,0.6265671,0.64065295,0.65443563,0.667934,0.6811649,0.69414365,0.7068842,0.7193991,0.7317,
   0.7377695,0.74378943,0.74976104,0.7556855,0.76156384,0.76739717,0.7731865,0.77893275,0.784637,0.7903,
   0.7953,0.8003,0.8053,0.8103,0.8153,0.8203,0.8253,0.8303,0.8353,0.8403,0.8453];
+// 레벨 계수: 2024 시트 '레벨 계수 리스트' (1~55레벨, 0.5 단위)
+const CPM_TABLE={1:0.09399999678,1.5:0.1351374308,2:0.1663978696,2.5:0.1926509145,3:0.2157324702,3.5:0.236572655,4:0.2557200491,4.5:0.2735303811,5:0.2902498841,5.5:0.3060573813,6:0.3210875988,6.5:0.3354450323,7:0.3492126763,7.5:0.3624577488,8:0.3752355874,8.5:0.3875924111,9:0.3995672762,9.5:0.4111935495,10:0.4225000143,10.5:0.4329264134,11:0.4431075454,11.5:0.4530599539,12:0.4627983868,12.5:0.4723360778,13:0.481684953,13.5:0.4908558103,14:0.499858439,14.5:0.5087017569,15:0.5173939466,15.5:0.5259425088,16:0.5343543291,16.5:0.5426357622,17:0.5507926941,17.5:0.5588305994,18:0.5667545199,18.5:0.574569148,19:0.5822789073,19.5:0.589887912,20:0.5974000096,20.5:0.6048236575,21:0.6121572852,21.5:0.6194041106,22:0.6265671253,22.5:0.6336491816,23:0.6406529546,23.5:0.6475809633,24:0.6544356346,24.5:0.6612192635,25:0.6679340005,25.5:0.6745818993,26:0.6811649203,26.5:0.6876849059,27:0.6941436529,27.5:0.7005428933,28:0.7068842053,28.5:0.7131691023,29:0.7193990946,29.5:0.725575617,30:0.7317000031,30.5:0.7347410111,31:0.7377694845,31.5:0.7407855746,32:0.7437894344,32.5:0.7467812087,33:0.749761045,33.5:0.7527291053,34:0.7556855083,34.5:0.7586303665,35:0.7615638375,35.5:0.7644860653,36:0.7673971653,36.5:0.770297274,37:0.7731865048,37.5:0.7760649459,38:0.7789327502,38.5:0.7817900648,39:0.7846369743,39.5:0.7874735836,40:0.7903000116,40.5:0.792803951,41:0.7953000069,41.5:0.7978039215,42:0.8003000021,42.5:0.8028038923,43:0.8052999973,43.5:0.8078038635,44:0.8102999926,44.5:0.8128038349,45:0.8152999878,45.5:0.8178038066,46:0.820299983,46.5:0.8228037786,47:0.8252999783,47.5:0.8278037509,48:0.8302999735,48.5:0.8328037534,49:0.8353000283,49.5:0.8378037559,50:0.8403000236,50.5:0.842803729,51:0.8453000188,51.5:0.8478037024,52:0.850300014,52.5:0.852803676,53:0.8553000093,53.5:0.8578036499,54:0.8603000045,54.5:0.862803624,55:0.8652999997};
 function cpm(lv){
-  const f=Math.floor(lv);
-  if(lv===f) return Math.fround(CPM[f]);
-  const a=Math.fround(CPM[f]), b=Math.fround(CPM[f+1]);
+  if(CPM_TABLE[lv]!==undefined) return CPM_TABLE[lv];
+  const f=Math.floor(lv), a=CPM_TABLE[f], b=CPM_TABLE[f+1];   // 표에 없는 값(예비)
   return Math.sqrt((a*a+b*b)/2);
 }
 function calcCP(p,iv,lv){
@@ -697,6 +701,7 @@ function render(){
       <div class="duo names"><div class="c">${esc(weathers[0])}</div><div class="c">${esc(weathers[1])}</div></div>
       <div class="c r1 lfoot">${esc(CONFIG.projectName).replace(/(\d{4})$/,'<span class="yr">$1</span>')}</div>
     </div>
+    <div class="dline"><i></i><i></i></div>
     <div class="right">
       <div class="c r1 title">${esc(title)}${two?'':brand()}</div>
       <div class="grid r1 thead">${levels.map(l=>`<span>${lvLabel(l)}</span>`).join('')}<span>공격</span><span>방어</span><span>HP</span><span>개체값</span></div>
@@ -788,6 +793,16 @@ function fit(){
   // 저장 박스를 개체값 표(분홍 테두리)와 같은 폭·같은 위치로
   const card=cap.querySelector('.card'), box=document.querySelector('.savebox');
   if(card&&box){ box.style.width=(card.offsetWidth*s)+'px'; box.style.marginLeft=(card.offsetLeft*s)+'px'; }
+  alignAdmin();
+}
+// PC(두 열 배치)에서 회색 관리자 박스 아래끝을 파란 저장 박스 아래끝에 맞춤
+function alignAdmin(){
+  const more=document.querySelector('.panel.more'), box=document.querySelector('.savebox');
+  if(!more||!box) return;
+  more.style.minHeight='';
+  if(matchMedia('(max-width:900px)').matches) return;   // 휴대폰(한 열)은 그대로
+  const diff=box.getBoundingClientRect().bottom-more.getBoundingClientRect().bottom;
+  if(diff>0) more.style.minHeight=(more.offsetHeight+diff)+'px';
 }
 
 /* ================= 조작 ================= */
@@ -829,7 +844,7 @@ $('themeBtn').addEventListener('click',()=>applyTheme(document.documentElement.d
 $('modeChips').innerHTML=Object.entries(MODES).map(([k,m])=>`<button type="button" class="chip" role="radio" data-mode="${k}">${m.label.replace('(','<br><small>(').replace(')',')</small>')}</button>`).join('');
 $('modeChips').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;state.mode=c.dataset.mode;update();});
 
-const LV_OPTS=[];for(let l=1;l<=51;l+=0.5)LV_OPTS.push(l);
+const LV_OPTS=[];for(let l=1;l<=55;l+=0.5)LV_OPTS.push(l);
 $('lv1').innerHTML=LV_OPTS.map(l=>`<option value="${l}">${l}</option>`).join('');
 $('lv2').innerHTML='<option value="">사용 안 함</option>'+LV_OPTS.map(l=>`<option value="${l}">${l}</option>`).join('');
 $('lv1').value='20';$('lv2').value='25';
@@ -1020,6 +1035,7 @@ function showFallback(canvas){
 $('closeModal').addEventListener('click',()=>$('modal').classList.remove('open'));
 $('modal').addEventListener('click',e=>{if(e.target.id==='modal')$('modal').classList.remove('open');});
 window.addEventListener('resize',fit);
+document.querySelectorAll('details').forEach(d=>d.addEventListener('toggle',alignAdmin));
 window.addEventListener('orientationchange',()=>setTimeout(fit,200));
 
 document.getElementById('saveBtn').style.backgroundImage=`url(${BTN_IMAGE})`;
