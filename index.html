@@ -250,7 +250,7 @@ a.brand{text-decoration:none;cursor:pointer}
     <section class="panel savebox" aria-label="이미지 저장">
       <div class="savebar">
         <select id="scale" aria-label="저장 화질"><option value="4" selected>최고화질</option><option value="3">고화질</option><option value="2">보통</option></select>
-        <button class="save" id="saveBtn">PNG로 저장</button>
+        <button class="save" id="saveBtn">이미지(PNG)로 저장하기</button>
       </div>
     </section>
   </main>
@@ -999,7 +999,7 @@ $('saveBtn').addEventListener('click',async()=>{
     const fname=pngName();
     const file=new File([blob],fname,{type:'image/png'});
     fit();
-    btn.disabled=false;btn.textContent='PNG로 저장';
+    btn.disabled=false;btn.textContent='이미지(PNG)로 저장하기';
     if(isIOS){
       // 아이폰: 공유 메뉴 → "이미지 저장". 공유 창이 안 열리면 길게 눌러 저장하는 창으로
       if(navigator.canShare&&navigator.canShare({files:[file]})){
@@ -1015,7 +1015,7 @@ $('saveBtn').addEventListener('click',async()=>{
     toast('이미지를 만들지 못했습니다. 잠시 후 다시 시도하거나 화질을 낮춰 보세요.');
     console.error(err);
   }finally{
-    btn.disabled=false;btn.textContent='PNG로 저장';fit();
+    btn.disabled=false;btn.textContent='이미지(PNG)로 저장하기';fit();
   }
 });
 // 아이폰: 앱 안 미리보기 등에서는 blob 주소 이미지가 막히므로 data 주소로 표시
