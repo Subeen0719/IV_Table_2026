@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>포켓몬 개체값 표 만들기 | Project: IV Table 2026</title>
+<title>포켓몬고 개체값 표 만들기 | Project: IV Table 2026</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&family=Nanum+Gothic:wght@400;700;800&family=Comic+Neue:wght@700&family=Varela+Round&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -16,8 +16,8 @@
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{margin:0;background:#fafafa;color:#222;font-family:Arial,Arimo,sans-serif}
-.page{max-width:1200px;margin:0 auto;padding:16px;display:grid;grid-template-columns:330px 1fr;grid-template-areas:"top stage" "more stage";gap:16px 20px;align-items:start}
-.top{grid-area:top;border-color:#000!important}.more{grid-area:more;border-color:#3b26ff!important}.stage-wrap{grid-area:stage;min-width:0}
+.page{max-width:1200px;margin:0 auto;padding:16px;display:grid;grid-template-columns:330px 1fr;grid-template-areas:"top stage" "guide stage" "more stage";gap:16px 20px;align-items:start}
+.top{grid-area:top;border-color:#000!important}.guide{grid-area:guide;border-color:#ff2d6f!important}.more{grid-area:more;border-color:#3b26ff!important}.stage-wrap{grid-area:stage;min-width:0}
 
 /* ---------- 조작 패널 ---------- */
 .panel{background:#fff;border:3px solid var(--magenta);padding:14px 16px}
@@ -70,6 +70,23 @@ summary{cursor:pointer;font-weight:700;font-size:14px;min-height:36px;display:fl
 html[data-theme=dark] .subtitle{color:#aaa}
 .themebtn{min-height:36px;padding:4px 10px;font-size:12px;white-space:nowrap}
 
+@media (max-width:900px){.more #extBox{border-top:none;margin-top:0;padding-top:0}}
+/* ---------- 사용 방법 ---------- */
+.guide{text-align:center;color:#000;line-height:1.5;word-break:keep-all;overflow-wrap:break-word}
+.g-title{margin:0 0 12px;font-size:22px;font-weight:900;color:#ff7f00}
+.g-steps{list-style:none;counter-reset:g;margin:0;padding:0}
+.g-steps>li{counter-increment:g;margin:0 0 14px;font-size:15px}
+.g-steps>li>b:first-child::before{content:counter(g) ". "}
+.g-note{margin:6px 0 0;font-size:13px;font-weight:400}
+.g-blue{color:#0000ff}.g-purple{color:#9900ff}
+.g-key{margin:6px 0 14px;font-size:15px}
+.g-contact{margin:0;font-size:16px}
+.g-mail{color:#ff00ff;font-weight:900;text-decoration:none}
+html[data-theme=dark] .guide{color:#eee}
+html[data-theme=dark] .g-blue{color:#7f9cff}
+html[data-theme=dark] .g-purple{color:#c58cff}
+html[data-theme=dark] .g-mail{color:#ff6bff}
+
 /* ---------- 다크 모드 (개체값 표 영역 #capture 는 그대로) ---------- */
 html[data-theme=dark]{color-scheme:dark}
 html[data-theme=dark] body{background:#121212;color:#e8e8e8}
@@ -96,7 +113,7 @@ html[data-theme=dark] .stage{background:#121212}
 #toast.show{opacity:1}
 
 @media (max-width:900px){
-  .page{grid-template-columns:1fr;grid-template-areas:"top" "stage" "more";padding:10px 10px 96px;gap:10px}
+  .page{grid-template-columns:1fr;grid-template-areas:"top" "stage" "guide" "more";padding:10px 10px 96px;gap:10px}
   .panel{padding:12px}
   .panel h1{font-size:16px;margin-bottom:8px}
   .stage-wrap{margin:0 -4px}
@@ -196,7 +213,7 @@ html[data-theme=dark] .stage{background:#121212}
 <body>
 <div class="page">
   <section class="panel top">
-    <div class="headrow"><div><h1>포켓몬 개체값 표 만들기</h1><p class="subtitle">Project: IV Table 2026</p></div><button type="button" class="ghost themebtn" id="themeBtn" aria-pressed="false">🌙 다크 모드</button></div>
+    <div class="headrow"><div><h1>포켓몬고 개체값 표 만들기</h1><p class="subtitle">Project: IV Table 2026</p></div><button type="button" class="ghost themebtn" id="themeBtn" aria-pressed="false">🌙 다크 모드</button></div>
     <div class="field search-wrap">
       <label for="search">포켓몬</label>
       <input type="search" id="search" placeholder="국문 이름 또는 도감 번호" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" role="combobox" aria-expanded="false" aria-controls="suggest">
@@ -213,14 +230,6 @@ html[data-theme=dark] .stage{background:#121212}
       </div>
       <div class="field"><label for="customTitle">표 제목</label><input type="text" id="customTitle" value="커스텀 개체값 표"></div>
     </div>
-  </section>
-
-  <main class="stage-wrap">
-    <p class="tip">표 안의 그림자·색이 다른·정렬 버튼을 눌러도 표에 반영돼요.</p>
-    <div class="stage" id="stage"><div id="scaler"><div id="capture"></div></div></div>
-  </main>
-
-  <section class="panel more">
     <div class="field">
       <label>옵션</label>
       <div class="toggles">
@@ -230,6 +239,32 @@ html[data-theme=dark] .stage{background:#121212}
       </div>
       <div class="hint" id="shadowHint" hidden>로켓단·정화 100은 그림자가 자동으로 적용됩니다.</div>
     </div>
+  </section>
+
+  <main class="stage-wrap">
+    <p class="tip">표 안의 그림자·색이 다른·정렬 버튼을 눌러도 표에 반영돼요.</p>
+    <div class="stage" id="stage"><div id="scaler"><div id="capture"></div></div></div>
+  </main>
+
+  <section class="panel guide" aria-labelledby="guideTitle">
+    <h2 id="guideTitle" class="g-title">&lt;사용 방법&gt;</h2>
+    <ol class="g-steps">
+      <li><b>제작할 개체값 표의 종류를 선택하세요.</b></li>
+      <li><b>포켓몬의 이름을 입력하고<br>그림자 및 색이 다른 여부, 정렬 범주를 선택하세요.</b>
+        <p class="g-note">※ 표 <b>안의</b> 그림자·색이 다른·정렬 버튼을 눌러도 표에 반영돼요.<br>
+        ※ 그림자 선택시 개체값 최저가 <b>(6.6.6)</b>으로 변경돼요.<br>
+        ※ 정렬은 <b>기본</b>과 <b>CP순</b>으로만 가능해요.</p></li>
+      <li><b>잠시 기다리면 개체값 표에 자동으로 값들이 표시돼요.</b></li>
+      <li><b>해당 이미지를 <span class="g-blue">다운로드</span>하여 공유해 보세요.</b><br>
+        <b class="g-purple">(최고화질 다운로드를 권장해요)</b>
+        <p class="g-note">※ 아직 출시하지 않은 포켓몬을 입력하면<br>해당 포켓몬의 이미지가 표시되지 않거나,<br>데이터가 부정확할 수 있어요.</p></li>
+    </ol>
+    <p class="g-key"><b>※ 보상으로 나오는 포켓몬의 이름을 검색해야 해요.</b><br>
+      <span class="g-blue">ex) 메가리자몽 ➡ 리자몽, 원시가이오가 ➡ 가이오가 등</span></p>
+    <p class="g-contact"><b class="g-blue">• 문의/질문:</b> <a class="g-mail" href="mailto:nan1m2m@gmail.com">nan1m2m@gmail.com</a></p>
+  </section>
+
+  <section class="panel more">
     <div class="savebar">
       <select id="scale" aria-label="저장 화질"><option value="4" selected>최고화질</option><option value="3">고화질</option><option value="2">보통</option></select>
       <button class="save" id="saveBtn">PNG로 저장</button>
@@ -316,7 +351,9 @@ const LOGO={icon:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAABlCAYAAACi
 /* ================= 설정 (직접 호스팅 시 여기만 수정) ================= */
 const CONFIG = {
   projectName: 'Project: IV Table 2026',
-  url: 'https://bit.ly/POGORaidIV',
+  url: 'https://bit.ly/pogoivtable',
+  // 하단 줄 배치 기준 주소: 위 url을 바꿔도 첫 '|'부터 오른쪽(버전·로고)은 이 주소 기준 위치에 그대로 고정
+  urlLayout: 'https://bit.ly/POGORaidIV',
   version: '4.0',
   brandText: '나님',
   brandLogo: ASSETS.brandLogo,   // 채널 로고 (이미지에 '나님' 글자 포함)
@@ -681,10 +718,16 @@ function fitBrow(){
   const marks=[...inner.querySelectorAll('.bar,.brand')];   // 구분선과 로고
   inner.style.top='0px'; marks.forEach(e=>e.style.top='0px');
   // ① 링크~로고가 칸 너비(왼쪽 4px, 오른쪽 14px 여백)에 꽉 차도록 글자 크기
+  const link=inner.querySelector('a');
+  link.style.width=''; link.style.fontSize=''; link.textContent=CONFIG.urlLayout||CONFIG.url;
   let fs=13; row.style.fontSize=fs+'px';
   const w=inner.offsetWidth;
   if(w>0) fs=Math.min(22,fs*(row.clientWidth-4-14)/w);
   row.style.fontSize=fs+'px';
+  // 실제 주소는 기준 주소 자리(폭 고정)에 넣고, 더 길면 그 자리에 맞게 글자만 줄임
+  const W=link.offsetWidth;
+  link.textContent=CONFIG.url; link.style.display='inline-block'; link.style.width=W+'px'; link.style.whiteSpace='nowrap';
+  const nat=link.scrollWidth; if(nat>W+0.5) link.style.fontSize=(fs*W/nat)+'px';
   // ② 글자(대문자)의 가운데가 칸 가운데에 오도록 줄 전체 이동
   const mid=row.clientHeight/2;
   inner.style.top=(mid-(inner.offsetTop+bl.offsetTop-0.36*fs))+'px';
@@ -771,7 +814,7 @@ function selectPokemon(name){
 function applyTheme(t){
   document.documentElement.dataset.theme=t;
   $('themeBtn').setAttribute('aria-pressed',t==='dark');
-  $('themeBtn').textContent=t==='dark'?'☀️ 라이트 모드':'🌙 다크 모드';
+  $('themeBtn').textContent=t==='dark'?'☀️ 일반 모드':'🌙 다크 모드';
   try{localStorage.setItem('ivtable2026-theme',t);}catch(e){}
 }
 $('themeBtn').addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
@@ -932,7 +975,8 @@ $('saveBtn').addEventListener('click',async()=>{
     const canvas=await html2canvas(el,{scale,useCORS:true,backgroundColor:'#ffffff',logging:false});
     const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
     if(!blob) throw new Error('이미지 변환 실패');
-    const fname=`IVTable2026_${state.nameText||state.name}_${MODES[state.mode].label}.png`.replace(/\s/g,'');
+    // 파일 이름: (도감번호 4자리)_(포켓몬명)_(표 종류)_개체값표.png  예) 0795_페로코체_레이드_개체값표.png
+    const fname=pngName();
     const file=new File([blob],fname,{type:'image/png'});
     fit();
     if(isTouch&&navigator.canShare&&navigator.canShare({files:[file]})){
@@ -951,6 +995,13 @@ $('saveBtn').addEventListener('click',async()=>{
   }
 });
 // 아이폰: 앱 안 미리보기 등에서는 blob 주소 이미지가 막히므로 data 주소로 표시
+function pngName(){
+  const p=DATA.find(x=>x.name===state.name);
+  const dex=String(p?p.dex:0).padStart(4,'0');
+  const name=(p?p.name:state.name).replace(/[\\/:*?"<>|]/g,'');      // 파일 이름에 못 쓰는 글자 제거
+  const kind=MODES[state.mode].label.replace(/\s/g,'');
+  return `${dex}_${name}_${kind}_개체값표.png`.replace(/\s/g,'');
+}
 function showFallback(canvas){
   const img=$('modalImg');
   img.onerror=()=>{img.alt='';toast('이 화면에서는 이미지를 표시할 수 없습니다. Safari에서 사이트를 열어 저장해 주세요.');};
