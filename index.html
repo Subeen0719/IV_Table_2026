@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Project: IV Table 2026</title>
+<title>포켓몬 개체값 표 만들기 | Project: IV Table 2026</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&family=Nanum+Gothic:wght@400;700;800&family=Comic+Neue:wght@700&family=Varela+Round&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -66,6 +66,8 @@ summary{cursor:pointer;font-weight:700;font-size:14px;min-height:36px;display:fl
 .tip{margin:0 0 8px;font-size:12px;color:#888}
 .headrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .headrow h1{margin:0!important}
+.subtitle{margin:2px 0 0;font-size:12px;font-weight:400;color:#888}
+html[data-theme=dark] .subtitle{color:#aaa}
 .themebtn{min-height:36px;padding:4px 10px;font-size:12px;white-space:nowrap}
 
 /* ---------- 다크 모드 (개체값 표 영역 #capture 는 그대로) ---------- */
@@ -158,7 +160,8 @@ html[data-theme=dark] .stage{background:#121212}
 .brand{display:flex;align-items:center;gap:.06em}
 .brand img{display:block}
 .title .brand .li{height:15px}.title .brand .lt{height:14.5px}
-.brow .brand .li{height:.82em}.brow .brand .lt{height:.8em}
+.brand .lt{position:relative}
+.brow .brand .li{height:.92em}.brow .brand .lt{height:.9em}
 .grid{display:grid;grid-template-columns:var(--cols);align-items:center;text-align:center}
 .thead{background:var(--head);color:#fff;font-weight:700;font-size:16.0px}
 .row{height:var(--r);font-weight:700;font-size:17.33px}
@@ -180,8 +183,8 @@ html[data-theme=dark] .stage{background:#121212}
 /* Comic Sans MS가 없는 휴대폰(안드로이드·아이폰)은 비슷한 무료 글꼴 Comic Neue로 대체 */
 .brow a{font-family:"Comic Sans MS","Comic Sans","Comic Neue",cursive;font-weight:700;color:#1155cc}
 .brow .ver{font-family:"Varela Round",Arial,Arimo,sans-serif;font-weight:700}
-.brow .bar{font-size:.9em}
-.brow .brand{display:flex;align-items:center;position:relative}
+.brow .bar{display:inline-block;position:relative;width:max(1.5px,.08em);height:.92em;background:#000;align-self:center}
+.brow .brand{display:flex;align-items:center;position:relative;align-self:center}
 
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
 #modal.open{display:flex}
@@ -193,7 +196,7 @@ html[data-theme=dark] .stage{background:#121212}
 <body>
 <div class="page">
   <section class="panel top">
-    <div class="headrow"><h1>Project: IV Table 2026</h1><button type="button" class="ghost themebtn" id="themeBtn" aria-pressed="false">🌙 다크 모드</button></div>
+    <div class="headrow"><div><h1>포켓몬 개체값 표 만들기</h1><p class="subtitle">Project: IV Table 2026</p></div><button type="button" class="ghost themebtn" id="themeBtn" aria-pressed="false">🌙 다크 모드</button></div>
     <div class="field search-wrap">
       <label for="search">포켓몬</label>
       <input type="search" id="search" placeholder="국문 이름 또는 도감 번호" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" role="combobox" aria-expanded="false" aria-controls="suggest">
@@ -227,6 +230,22 @@ html[data-theme=dark] .stage{background:#121212}
       </div>
       <div class="hint" id="shadowHint" hidden>로켓단·정화 100은 그림자가 자동으로 적용됩니다.</div>
     </div>
+    <div class="savebar">
+      <select id="scale" aria-label="저장 화질"><option value="4" selected>최고화질</option><option value="3">고화질</option><option value="2">보통</option></select>
+      <button class="save" id="saveBtn">PNG로 저장</button>
+    </div>
+
+    <details id="extBox">
+      <summary>확장 편집 (관리자)</summary>
+      <div class="lockArea">
+        <p class="hint">도감 번호·이름 표시와 표 글꼴을 바꾸려면 비밀번호를 입력하세요.</p>
+        <div class="field" style="display:flex;gap:8px;margin:8px 0 0">
+          <input type="password" class="adminPw" placeholder="비밀번호" autocomplete="current-password" style="flex:1">
+          <button class="ghost unlockBtn" style="flex:none;width:72px">확인</button>
+        </div>
+        <div class="lockMsg" style="font-size:12px;color:#d00;margin-top:4px"></div>
+      </div>
+      <div class="adminArea" hidden>
     <div class="field">
       <label for="fontSel">표 글꼴</label>
       <select id="fontSel"></select>
@@ -236,23 +255,20 @@ html[data-theme=dark] .stage{background:#121212}
       <div class="field"><label for="dexText">도감 번호 표시</label><input type="text" id="dexText"></div>
       <div class="field"><label for="nameText">이름 표시</label><input type="text" id="nameText"></div>
     </div>
-
-    <div class="savebar">
-      <select id="scale" aria-label="저장 화질"><option value="4" selected>최고화질</option><option value="3">고화질</option><option value="2">보통</option></select>
-      <button class="save" id="saveBtn">PNG로 저장</button>
-    </div>
-
+        <button class="ghost lockBtn" style="width:100%;margin-top:4px">다시 잠그기</button>
+      </div>
+    </details>
     <details id="adminBox">
       <summary>데이터 관리 (관리자)</summary>
-      <div id="lockArea">
+      <div class="lockArea">
         <p class="hint">포켓몬 데이터와 타입·날씨 아이콘을 바꾸려면 비밀번호를 입력하세요.</p>
         <div class="field" style="display:flex;gap:8px;margin:8px 0 0">
-          <input type="password" id="adminPw" placeholder="비밀번호" autocomplete="current-password" style="flex:1">
-          <button class="ghost" id="unlockBtn" style="flex:none;width:72px">확인</button>
+          <input type="password" class="adminPw" placeholder="비밀번호" autocomplete="current-password" style="flex:1">
+          <button class="ghost unlockBtn" style="flex:none;width:72px">확인</button>
         </div>
-        <div id="lockMsg" style="font-size:12px;color:#d00;margin-top:4px"></div>
+        <div class="lockMsg" style="font-size:12px;color:#d00;margin-top:4px"></div>
       </div>
-      <div id="adminArea" hidden>
+      <div class="adminArea" hidden>
     <details>
       <summary>포켓몬 데이터 불러오기</summary>
       <p class="hint">모든 방문자에게 적용하려면 GitHub 저장소에 <b>Data&amp;Assets_포켓몬.csv</b>를 올리세요. 여기서 붙여넣은 데이터는 이 기기에서만 미리 확인용으로 적용됩니다. 'Data&amp;Assets_포켓몬' 탭을 A1부터 전체 복사해 붙여넣으면 50레벨 CP로 검산합니다.</p>
@@ -274,7 +290,7 @@ html[data-theme=dark] .stage{background:#121212}
       <button class="ghost" id="iconBtn" style="width:100%">아이콘 적용</button>
       <div id="iconMsg" style="font-size:12px;margin-top:6px"></div>
     </details>
-        <button class="ghost" id="lockBtn" style="width:100%;margin-top:12px">다시 잠그기</button>
+        <button class="ghost lockBtn" style="width:100%;margin-top:12px">다시 잠그기</button>
       </div>
     </details>
   </section>
@@ -312,8 +328,8 @@ const CONFIG = {
   typeIcons: {...ASSETS.typeIcons},        // 없는 타입은 색 원형으로 표시
   weatherIcons: {...ASSETS.weatherIcons},  // 없는 날씨는 이모지로 표시
   statBarMax: 500,
-  // 데이터 관리 비밀번호의 SHA-256 값 (현재 임시 비밀번호: iv2026)
-  adminHash: 'e8625579fe89b278da241ba1e42f8f3543195fff8dbd84349976116a05403d17'
+  // 관리자 비밀번호의 SHA-256 값 (비밀번호 자체는 파일에 적지 않음)
+  adminHash: 'e040d5f2fbce64440eb68553ac079492040b30d17f26c807f4e02ff2895848e1'
 };
 
 /* ================= 기본 데이터 [도감번호, 이름, 공격, 방어, HP, 타입1, 타입2] ================= */
@@ -384,6 +400,7 @@ function buildRows(p,levels,shadow,purify,sort){
   const rows=ivs.map(mk);
   if(sort==='cp') rows.sort((x,y)=>y.cps[0]-x.cps[0]||(y.cps[1]||0)-(x.cps[1]||0)||cmpIV(x,y));
   else rows.sort(cmpIV);
+  if(purify) return rows;   // 정화 100은 최저치(40%) 줄 없이 13~15 조합만
   const f=shadow?6:10;
   const floor=mk([f,f,f]); floor.floor=true;
   rows.push(floor);
@@ -531,8 +548,9 @@ const FONTS={
 };
 
 /* ================= 상태 ================= */
-let savedFont='arial';try{savedFont=localStorage.getItem('ivtable2026-font')||'arial';}catch(e){}
-const state={font:FONTS[savedFont]?savedFont:'arial',name:'페로코체',dexText:'#795',nameText:'페로코체',mode:'raid',lv1:20,lv2:25,
+try{localStorage.removeItem('ivtable2026-font');}catch(e){}
+const state={font:'arial',   // 모든 방문자는 Arial로 보고, 관리자만 확장 편집에서 잠시 바꿀 수 있음
+name:'페로코체',dexText:'#795',nameText:'페로코체',mode:'raid',lv1:20,lv2:25,
   customTitle:'커스텀 개체값 표',shadow:false,shiny:false,sort:'default'};
 
 function currentLevels(){
@@ -647,9 +665,9 @@ function render(){
       ${two
         ?`<div class="r1 nrow flex${mode.boost?'':' lv'}"><span class="up" style="color:#3c78d8">${upL}</span><span class="up up2" style="color:#e6007a">${upR}</span><span class="note">${noteText}</span></div>`
         :`<div class="c r1 nrow"><span class="note big">${noteText}</span></div>`}
-      <div class="brow"><span class="brin"><i class="bl"></i><a href="${esc(CONFIG.url)}">${esc(CONFIG.url)}</a><span class="bar">|</span>
+      <div class="brow"><span class="brin"><i class="bl"></i><a href="${esc(CONFIG.url)}">${esc(CONFIG.url)}</a><span class="bar"></span>
         <span class="ver"><span style="color:#0000ff">Ver.</span> <span style="color:#ff0000">${esc(CONFIG.version)}</span></span>
-        ${two?`<span class="bar">|</span>${brand()}`:''}</span></div>
+        ${two?`<span class="bar"></span>${brand()}`:''}</span></div>
     </div>
   </div>`;
   requestAnimationFrame(()=>{fitBrow();fit();});
@@ -659,31 +677,37 @@ function render(){
 function fitBrow(){
   const row=document.querySelector('#capture .brow'), inner=row&&row.querySelector('.brin');
   if(!inner) return;
-  const logo=inner.querySelector('.brand'), bars=inner.querySelectorAll('.bar'), bar=bars[bars.length-1];
   const bl=inner.querySelector('.bl');
-  inner.style.top='0px'; if(logo) logo.style.top='0px';
+  const marks=[...inner.querySelectorAll('.bar,.brand')];   // 구분선과 로고
+  inner.style.top='0px'; marks.forEach(e=>e.style.top='0px');
+  // ① 링크~로고가 칸 너비(왼쪽 4px, 오른쪽 14px 여백)에 꽉 차도록 글자 크기
   let fs=13; row.style.fontSize=fs+'px';
-  for(let pass=0;pass<2;pass++){
-    // ① 링크~로고가 칸 너비(왼쪽 4px, 오른쪽 14px 여백)에 꽉 차도록 글자 크기
-    const w=inner.offsetWidth;
-    if(w>0) fs=Math.min(22,fs*(row.clientWidth-4-14)/w);
-    row.style.fontSize=fs+'px';
-    // ② 로고 높이 = '|' 글자의 실제 위~아래 길이
-    if(logo&&bar){
-      const cs=getComputedStyle(bar), ctx=(fitBrow.c||(fitBrow.c=document.createElement('canvas'))).getContext('2d');
-      ctx.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-      const m=ctx.measureText('|');
-      fitBrow.asc=m.actualBoundingBoxAscent; const H=fitBrow.asc+m.actualBoundingBoxDescent;
-      logo.querySelector('.li').style.height=H+'px';
-      logo.querySelector('.lt').style.height=(H*0.97)+'px';
-    }
-  }
-  // ③ 글자(대문자)의 가운데가 칸 가운데에 오도록 줄 전체 이동
-  const base=bl.offsetTop;                       // 줄 안에서 기준선 위치
-  inner.style.top=(row.clientHeight/2-(inner.offsetTop+base-0.38*fs))+'px';
-  // ④ 로고 위끝을 '|' 위끝에 맞춤 (로고 높이가 같으므로 아래끝도 맞음)
-  if(logo&&bar) logo.style.top=((base-fitBrow.asc)-logo.offsetTop)+'px';
+  const w=inner.offsetWidth;
+  if(w>0) fs=Math.min(22,fs*(row.clientWidth-4-14)/w);
+  row.style.fontSize=fs+'px';
+  // ② 글자(대문자)의 가운데가 칸 가운데에 오도록 줄 전체 이동
+  const mid=row.clientHeight/2;
+  inner.style.top=(mid-(inner.offsetTop+bl.offsetTop-0.36*fs))+'px';
+  // ③ 구분선(|)과 로고는 각자 상자의 가운데를 칸 가운데에 정확히 맞춤 → 로고가 | 가운데에 위치
+  // 구분선(|)만 살짝 아래로 (글자 크기의 6%)
+  marks.forEach(e=>{ const down=e.classList.contains('bar')?0.06*fs:0; e.style.top=(mid-(inner.offsetTop+e.offsetTop+e.offsetHeight/2)+down)+'px'; });
+  const lt=inner.querySelector('.brand .lt'); if(lt) lt.style.top=(0.07*fs)+'px';   // '나님' 글자만 조금 아래로
   fitNote();
+  fitTitleLogo();
+}
+// 한 줄짜리: 제목 줄 로고를 '…개체값 표' 글자와 같은 높이·같은 가운데에 맞춤
+function fitTitleLogo(){
+  const t=document.querySelector('#capture .title'), logo=t&&t.querySelector('.brand');
+  if(!logo) return;
+  const tn=[...t.childNodes].find(n=>n.nodeType===3&&n.textContent.trim()); if(!tn) return;
+  const rg=document.createRange(); rg.selectNodeContents(tn);
+  const tr=t.getBoundingClientRect(), k=t.offsetHeight/tr.height, r=rg.getBoundingClientRect();
+  const fs=parseFloat(getComputedStyle(t).fontSize);
+  // 한글 글자 몸통 높이(약 0.86em)에 로고 높이를 맞추고, 글자 가운데에 로고 가운데를 맞춤
+  const H=0.86*fs;
+  logo.querySelector('.li').style.height=H+'px'; logo.querySelector('.lt').style.height=(H*0.97)+'px';
+  const textMid=((r.top+r.bottom)/2-tr.top)*k;
+  logo.style.top=(textMid-logo.offsetHeight/2)+'px';
 }
 // 91% 안내 문구를 남는 폭에 꽉 차도록 글자 크기 조절
 // 91% 문구: 맨 아래 '10'(공격 열)이 시작하는 지점부터 오른쪽 끝(여백 5px)까지 꽉 차게
@@ -817,7 +841,6 @@ document.addEventListener('pointerdown',e=>{if(!e.target.closest('.search-wrap')
 $('fontSel').innerHTML=Object.entries(FONTS).map(([k,f])=>`<option value="${k}">${f.label}</option>`).join('');
 $('fontSel').addEventListener('change',async e=>{
   state.font=e.target.value;
-  try{localStorage.setItem('ivtable2026-font',state.font);}catch(err){}
   update();
   await document.fonts.load('700 16px '+FONTS[state.font].load).catch(()=>{});
   fitBrow();fit();
@@ -848,18 +871,23 @@ async function sha256(t){
   return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 function setLocked(locked){
-  $('adminArea').hidden=locked; $('lockArea').hidden=!locked;
+  // 확장 편집·데이터 관리 두 칸이 같은 비밀번호로 함께 열리고 잠김
+  document.querySelectorAll('.adminArea').forEach(e=>e.hidden=locked);
+  document.querySelectorAll('.lockArea').forEach(e=>e.hidden=!locked);
   try{ locked?sessionStorage.removeItem('ivtable2026-admin'):sessionStorage.setItem('ivtable2026-admin','1'); }catch(e){}
+  if(locked && state.font!=='arial'){ state.font='arial'; update(); }   // 잠그면 기본 글꼴(Arial)로
 }
-async function tryUnlock(){
-  const pw=$('adminPw').value;
-  if(!window.crypto||!crypto.subtle){ $('lockMsg').textContent='https 주소에서만 확인할 수 있습니다.'; return; }
-  if(await sha256(pw)===CONFIG.adminHash){ $('adminPw').value=''; $('lockMsg').textContent=''; setLocked(false); }
-  else{ $('lockMsg').textContent='비밀번호가 맞지 않습니다.'; $('adminPw').select(); }
+async function tryUnlock(box){
+  const input=box.querySelector('.adminPw'), msgEl=box.querySelector('.lockMsg');
+  if(!window.crypto||!crypto.subtle){ msgEl.textContent='https 주소에서만 확인할 수 있습니다.'; return; }
+  if(await sha256(input.value)===CONFIG.adminHash){ input.value=''; msgEl.textContent=''; setLocked(false); }
+  else{ msgEl.textContent='비밀번호가 맞지 않습니다.'; input.select(); }
 }
-$('unlockBtn').addEventListener('click',tryUnlock);
-$('adminPw').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();tryUnlock();}});
-$('lockBtn').addEventListener('click',()=>setLocked(true));
+document.querySelectorAll('.lockArea').forEach(box=>{
+  box.querySelector('.unlockBtn').addEventListener('click',()=>tryUnlock(box));
+  box.querySelector('.adminPw').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();tryUnlock(box);}});
+});
+document.querySelectorAll('.lockBtn').forEach(b=>b.addEventListener('click',()=>setLocked(true)));
 try{ if(sessionStorage.getItem('ivtable2026-admin')==='1') setLocked(false); }catch(e){}
 
 /* ---- 데이터 ---- */
