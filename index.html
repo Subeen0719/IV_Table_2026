@@ -17,7 +17,7 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{margin:0;background:#fafafa;color:#222;font-family:Arial,Arimo,sans-serif}
 .page{max-width:1200px;margin:0 auto;padding:16px;display:grid;grid-template-columns:330px 1fr;grid-template-areas:"top stage" "guide stage" "more stage";gap:16px 20px;align-items:start}
-.top{grid-area:top;border-color:#000!important}.guide{grid-area:guide;border-color:#ff2d6f!important}.more{grid-area:more;border-color:#3b26ff!important}.stage-wrap{grid-area:stage;min-width:0}
+.top{grid-area:top;border-color:#000!important}.guide{grid-area:guide;border-color:#ff2d6f!important}.more{grid-area:more;border-color:#9e9e9e!important}.savebox{border-color:#3b26ff!important;margin-top:10px;padding:12px}.stage-wrap{grid-area:stage;min-width:0}
 
 /* ---------- 조작 패널 ---------- */
 .panel{background:#fff;border:3px solid var(--magenta);padding:14px 16px}
@@ -55,7 +55,7 @@ button,.filebtn{font:inherit;font-weight:700;cursor:pointer;border-radius:6px;to
 #sortBtn[aria-pressed=true]{background:#8e7cf0;border-color:#8e7cf0}
 .tgl:disabled{opacity:.75;cursor:default}
 
-.savebar{display:flex;gap:8px;margin:4px 0 4px}
+.savebar{display:flex;gap:8px;margin:0}
 .savebar select{width:auto;flex:none}
 .save{flex:1;min-height:48px;font-size:17px;background:#cdeefd center/100% 100% no-repeat;color:#000;border:none}
 .save:disabled{opacity:.6;cursor:wait}
@@ -70,7 +70,7 @@ summary{cursor:pointer;font-weight:700;font-size:14px;min-height:36px;display:fl
 html[data-theme=dark] .subtitle{color:#aaa}
 .themebtn{min-height:36px;padding:4px 10px;font-size:12px;white-space:nowrap}
 
-@media (max-width:900px){.more #extBox{border-top:none;margin-top:0;padding-top:0}}
+.more #extBox{border-top:none;margin-top:0;padding-top:0}
 /* ---------- 사용 방법 ---------- */
 .guide{text-align:center;color:#000;line-height:1.5;word-break:keep-all;overflow-wrap:break-word}
 .g-title{margin:0 0 12px;font-size:22px;font-weight:900;color:#ff7f00}
@@ -102,22 +102,21 @@ html[data-theme=dark] details{border-top-color:#444}
 html[data-theme=dark] #suggest{background:#1e1e1e}
 html[data-theme=dark] #suggest li[aria-selected=true],html[data-theme=dark] #suggest li:active{background:#3a2e22}
 html[data-theme=dark] #suggest .se{color:#aaa}
-html[data-theme=dark] .savebar{background:#1e1e1e}
+html[data-theme=dark] .savebox{background:#1e1e1e}
 html[data-theme=dark] #modal .inner{background:#1e1e1e}
 html[data-theme=dark] #modal p{color:#bbb}
 html[data-theme=dark] .stage{background:#121212}
 .stage{overflow:hidden}
 #scaler{transform-origin:top left;width:max-content}
 
-#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:90vw;text-align:center}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:90vw;text-align:center}
 #toast.show{opacity:1}
 
 @media (max-width:900px){
-  .page{grid-template-columns:1fr;grid-template-areas:"top" "stage" "guide" "more";padding:10px 10px 96px;gap:10px}
+  .page{grid-template-columns:1fr;grid-template-areas:"top" "stage" "guide" "more";padding:10px;gap:10px}
   .panel{padding:12px}
   .panel h1{font-size:16px;margin-bottom:8px}
   .stage-wrap{margin:0 -4px}
-  .savebar{position:fixed;left:0;right:0;bottom:0;margin:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:#fff;border-top:3px solid var(--magenta);z-index:8}
 }
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 
@@ -176,6 +175,7 @@ html[data-theme=dark] .stage{background:#121212}
 .title .brand{position:absolute;right:8px}
 .brand{display:flex;align-items:center;gap:.06em}
 .brand img{display:block}
+a.brand{text-decoration:none;cursor:pointer}
 .title .brand .li{height:15px}.title .brand .lt{height:14.5px}
 .brand .lt{position:relative}
 .brow .brand .li{height:.92em}.brow .brand .lt{height:.9em}
@@ -244,6 +244,12 @@ html[data-theme=dark] .stage{background:#121212}
   <main class="stage-wrap">
     <p class="tip">표 안의 그림자·색이 다른·정렬 버튼을 눌러도 표에 반영돼요.</p>
     <div class="stage" id="stage"><div id="scaler"><div id="capture"></div></div></div>
+    <section class="panel savebox" aria-label="이미지 저장">
+      <div class="savebar">
+        <select id="scale" aria-label="저장 화질"><option value="4" selected>최고화질</option><option value="3">고화질</option><option value="2">보통</option></select>
+        <button class="save" id="saveBtn">PNG로 저장</button>
+      </div>
+    </section>
   </main>
 
   <section class="panel guide" aria-labelledby="guideTitle">
@@ -265,11 +271,6 @@ html[data-theme=dark] .stage{background:#121212}
   </section>
 
   <section class="panel more">
-    <div class="savebar">
-      <select id="scale" aria-label="저장 화질"><option value="4" selected>최고화질</option><option value="3">고화질</option><option value="2">보통</option></select>
-      <button class="save" id="saveBtn">PNG로 저장</button>
-    </div>
-
     <details id="extBox">
       <summary>확장 편집 (관리자)</summary>
       <div class="lockArea">
@@ -356,6 +357,7 @@ const CONFIG = {
   urlLayout: 'https://bit.ly/POGORaidIV',
   version: '4.0',
   brandText: '나님',
+  channelUrl: 'https://youtube.com/channel/UC6w1emHxSOiFO5vDE8aNuvg',   // 나님 로고를 누르면 이동할 채널
   brandLogo: ASSETS.brandLogo,   // 채널 로고 (이미지에 '나님' 글자 포함)
   // 시트의 IMAGE 수식과 같은 주소 형식 ({dex}=도감 번호, {form}=비고2)
   imageTemplate: 'https://cdn.jsdelivr.net/gh/PokeMiners/pogo_assets@master/Images/Pokemon%20-%20256x256/Addressable%20Assets/pm{dex}{form}.icon.png',
@@ -626,7 +628,7 @@ function weatherCell(w){
   if(CONFIG.weatherIcons[w]) return `<div class="c">${imgTag(CONFIG.weatherIcons[w],w)}</div>`;
   return `<div class="c"><span class="wemoji">${WEATHER_EMOJI[w]||''}</span></div>`;
 }
-const brand=()=>`<span class="brand"><img class="li" src="${LOGO.icon}" alt=""><img class="lt" src="${LOGO.text}" alt="${esc(CONFIG.brandText)}"></span>`;
+const brand=()=>`<a class="brand" href="${esc(CONFIG.channelUrl)}" target="_blank" rel="noopener" title="유튜브 채널로 이동"><img class="li" src="${LOGO.icon}" alt=""><img class="lt" src="${LOGO.text}" alt="${esc(CONFIG.brandText)}"></a>`;
 const lvLabel=l=>`CP_Lv.${l}`;
 
 function render(){
@@ -979,13 +981,17 @@ $('saveBtn').addEventListener('click',async()=>{
     const fname=pngName();
     const file=new File([blob],fname,{type:'image/png'});
     fit();
-    if(isTouch&&navigator.canShare&&navigator.canShare({files:[file]})){
-      try{ await navigator.share({files:[file]}); toast('공유 메뉴에서 "이미지 저장"을 누르면 사진첩에 저장됩니다.'); }
-      catch(e){ if(e.name!=='AbortError') showFallback(canvas); }
-    }else if(isIOS){
-      showFallback(canvas);
+    btn.disabled=false;btn.textContent='PNG로 저장';
+    if(isIOS){
+      // 아이폰: 공유 메뉴 → "이미지 저장". 공유 창이 안 열리면 길게 눌러 저장하는 창으로
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        navigator.share({files:[file]})
+          .then(()=>toast('공유 메뉴에서 "이미지 저장"을 누르면 사진첩에 저장됩니다.'))
+          .catch(e=>{ if(e.name!=='AbortError') showFallback(canvas); });
+      }else showFallback(canvas);
     }else{
-      downloadBlob(blob,fname); toast('PNG를 저장했습니다.');
+      // 안드로이드·PC: 파일로 바로 다운로드 (공유 창이 멈추는 기기가 있어 사용하지 않음)
+      downloadBlob(blob,fname); toast('PNG를 저장했습니다. 다운로드 폴더를 확인하세요.');
     }
   }catch(err){
     toast('이미지를 만들지 못했습니다. 잠시 후 다시 시도하거나 화질을 낮춰 보세요.');
