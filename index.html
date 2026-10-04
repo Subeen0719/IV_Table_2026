@@ -210,6 +210,7 @@ a.brand{text-decoration:none;cursor:pointer}
 /* Comic Sans MS가 없는 휴대폰(안드로이드·아이폰)은 비슷한 무료 글꼴 Comic Neue로 대체 */
 .brow a{font-family:"Comic Sans MS","Comic Sans","Comic Neue",cursive;font-weight:700;color:#1155cc;text-decoration:none;position:relative}
 /* 밑줄을 직접 그리고, 글자 주변을 흰색으로 감싸 p·y·g 아래에서 밑줄이 끊기게 (PNG 저장에도 동일) */
+.brow a .bm{display:inline-block;width:0;height:0}
 .brow a .ul{position:absolute;left:0;height:max(1px,.07em);background:currentColor;z-index:0}
 .brow a .ut{position:relative;z-index:1;text-shadow:-.08em 0 #fff,.08em 0 #fff,0 -.06em #fff,0 .07em #fff,-.06em -.05em #fff,.06em -.05em #fff,-.06em .06em #fff,.06em .06em #fff}
 .brow .ver{font-family:"Varela Round",Arial,Arimo,sans-serif;font-weight:700}
@@ -746,9 +747,9 @@ function fitBrow(){
   link.textContent=CONFIG.url; link.style.display='inline-block'; link.style.width=W+'px'; link.style.whiteSpace='nowrap';
   const nat=link.scrollWidth; if(nat>W+0.5) link.style.fontSize=(fs*W/nat)+'px';
   // 밑줄: 글자 폭만큼, 기준선 조금 아래에 직접 그림
-  link.innerHTML=`<i class="ul"></i><span class="ut">${esc(CONFIG.url)}</span>`;
-  { const ut=link.querySelector('.ut'), ul=link.querySelector('.ul'), lfs=parseFloat(getComputedStyle(link).fontSize);
-    ul.style.width=ut.offsetWidth+'px'; ul.style.top=(ut.offsetTop+ut.offsetHeight-0.2*lfs)+'px'; }
+  link.innerHTML=`<i class="ul"></i><span class="ut">${esc(CONFIG.url)}<i class="bm"></i></span>`;
+  { const ut=link.querySelector('.ut'), ul=link.querySelector('.ul'), bm=link.querySelector('.bm'), lfs=parseFloat(getComputedStyle(link).fontSize);
+    ul.style.width=ut.offsetWidth+'px'; ul.style.top=(bm.offsetTop+0.1*lfs)+'px'; }   // 글자 기준선보다 0.1em 아래
   // ② 글자(대문자)의 가운데가 칸 가운데에 오도록 줄 전체 이동
   const mid=row.clientHeight/2;
   inner.style.top=(mid-(inner.offsetTop+bl.offsetTop-0.36*fs))+'px';
@@ -1006,7 +1007,10 @@ $('saveBtn').addEventListener('click',async()=>{
     const budget=isIOS?16e6:isTouch?24e6:60e6;
     const area=el.offsetWidth*el.offsetHeight;
     const scale=Math.min(+$('scale').value,Math.sqrt(budget/area));
-    const canvas=await html2canvas(el,{scale,useCORS:true,backgroundColor:'#ffffff',logging:false});
+    const ulg=underlineGeom();   // 링크 밑줄 위치를 먼저 기록
+    const canvas=await html2canvas(el,{scale,useCORS:true,backgroundColor:'#ffffff',logging:false,
+      onclone:d=>{ d.querySelectorAll('#capture .brow .ul').forEach(e=>e.style.visibility='hidden'); }});
+    if(ulg) drawSkipInkUnderline(canvas,ulg,canvas.width/el.offsetWidth);   // 밑줄은 직접 그림
     const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
     if(!blob) throw new Error('이미지 변환 실패');
     // 파일 이름: (도감번호 4자리)_(포켓몬명)_(표 종류)_개체값표.png  예) 0795_페로코체_레이드_개체값표.png
@@ -1033,6 +1037,35 @@ $('saveBtn').addEventListener('click',async()=>{
   }
 });
 // 아이폰: 앱 안 미리보기 등에서는 blob 주소 이미지가 막히므로 data 주소로 표시
+/* ---- 링크 밑줄 직접 그리기 (p·y·g 등 아래로 내려오는 글자 부분은 비우기) ----
+   PNG 변환 도구가 브라우저의 '밑줄 끊기'를 지원하지 않아서, 저장 이미지 위에 밑줄을 직접 그림:
+   ① 밑줄 없이 표를 캡처 ② 밑줄 자리 주변에 글자 픽셀이 있는 가로 위치를 찾고 ③ 그 위치 ± 여백만 비우고 밑줄을 칠함 */
+function underlineGeom(){
+  const ul=document.querySelector('#capture .brow .ul'); if(!ul) return null;
+  const c=document.getElementById('capture').getBoundingClientRect(), r=ul.getBoundingClientRect();
+  return {x:r.left-c.left,y:r.top-c.top,w:r.width,h:r.height,color:getComputedStyle(ul).backgroundColor,
+          fs:parseFloat(getComputedStyle(ul.parentNode).fontSize)};
+}
+function drawSkipInkUnderline(canvas,g,k){
+  const ctx=canvas.getContext('2d');
+  const x0=Math.round(g.x*k), w=Math.round(g.w*k), y0=Math.round(g.y*k), h=Math.max(1,Math.round(g.h*k));
+  const gap=Math.max(2,Math.round(0.08*g.fs*k)), pad=Math.max(1,Math.round(0.05*g.fs*k));
+  // 밑줄 자리와 그 바로 아래만 검사 (기준선 위 글자 몸통은 제외 → 아래로 내려오는 글자만 걸림)
+  const top=Math.round(0.03*g.fs*k);   // 밑줄에 거의 닿는 글자도 비우도록 살짝 위까지
+  const sx=Math.max(0,x0-gap), sy=Math.max(0,y0-top), W=Math.min(canvas.width-sx,w+gap*2), H=h+pad+top;
+  let px; try{ px=ctx.getImageData(sx,sy,W,H).data; }catch(e){ ctx.fillStyle=g.color; ctx.fillRect(x0,y0,w,h); return; }
+  const ink=new Uint8Array(W);
+  for(let x=0;x<W;x++) for(let y=0;y<H;y++){ const i=(y*W+x)*4; if(px[i]+px[i+1]+px[i+2]<600){ ink[x]=1; break; } }
+  const block=new Uint8Array(W);
+  for(let x=0;x<W;x++) if(ink[x]) for(let d=-gap;d<=gap;d++){ const t=x+d; if(t>=0&&t<W) block[t]=1; }
+  ctx.fillStyle=g.color;
+  let run=-1;
+  for(let x=x0-sx;x<=x0-sx+w;x++){
+    const free=x<x0-sx+w&&!block[x];
+    if(free&&run<0) run=x;
+    if(!free&&run>=0){ ctx.fillRect(sx+run,y0,x-run,h); run=-1; }
+  }
+}
 function pngName(){
   const p=DATA.find(x=>x.name===state.name);
   const dex=String(p?p.dex:0).padStart(4,'0');
