@@ -78,6 +78,22 @@ html[data-theme=dark] .subtitle{color:#aaa}
 .themebtn{min-height:36px;padding:4px 10px;font-size:12px;white-space:nowrap}
 
 .more #extBox{border-top:none;margin-top:0;padding-top:0}
+/* ---------- 관리자 개체값 편집 창 ---------- */
+#capture .iv[data-act=iv]{cursor:pointer}
+#ivPop{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(340px,calc(100vw - 24px));
+  background:#fff;border:3px solid #9e9e9e;border-radius:10px;padding:12px;z-index:15;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#ivPop[hidden]{display:none}
+.ivp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:15px}
+.ivp-x{border:none;background:none;font-size:18px;min-width:36px;min-height:36px;color:inherit}
+.ivp-in{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ivp-in label{font-size:12px;font-weight:700;display:flex;flex-direction:column;gap:4px}
+.ivp-in .ivl{display:block;height:16px;line-height:16px}   /* 한글·영문 이름표 높이를 같게 고정 */
+.ivp-in input{text-align:center}
+.ivp-res{font-size:13px;margin:8px 0;min-height:18px}
+.ivp-btn{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ivp-ok{background:#3b26ff!important;color:#fff!important;border-color:#3b26ff!important}
+html[data-theme=dark] #ivPop{background:#1e1e1e;color:#eee}
+
 /* ---------- 사용 방법 ---------- */
 .guide{text-align:center;color:#000;line-height:1.5;word-break:keep-all;overflow-wrap:break-word}
 .g-title{margin:0 0 12px;font-size:22px;font-weight:900;color:#ff7f00}
@@ -287,7 +303,7 @@ a.brand{text-decoration:none;cursor:pointer}
     <details id="extBox">
       <summary>확장 편집 (관리자)</summary>
       <div class="lockArea">
-        <p class="hint">도감 번호·이름 표시와 표 글꼴을 바꾸려면 비밀번호를 입력하세요.</p>
+        <p class="hint">비밀번호를 입력하세요.</p>
         <div class="field" style="display:flex;gap:8px;margin:8px 0 0">
           <input type="password" class="adminPw" placeholder="비밀번호" autocomplete="current-password" style="flex:1">
           <button class="ghost unlockBtn" style="flex:none;width:72px">확인</button>
@@ -304,13 +320,18 @@ a.brand{text-decoration:none;cursor:pointer}
       <div class="field"><label for="dexText">도감 번호 표시</label><input type="text" id="dexText"></div>
       <div class="field"><label for="nameText">이름 표시</label><input type="text" id="nameText"></div>
     </div>
+    <div class="field">
+      <label>개체값 편집</label>
+      <p class="hint" style="margin:0 0 6px">표의 공격·방어·HP 숫자를 누르면 그 줄의 개체값을 바꿀 수 있어요. CP와 개체값(%)이 바로 다시 계산됩니다. 이 화면에서만 잠시 적용되며, 포켓몬이나 표 종류를 바꾸면 원래대로 돌아갑니다.</p>
+      <button class="ghost" id="ivResetAll" style="width:100%">개체값 편집 모두 되돌리기</button>
+    </div>
         <button class="ghost lockBtn" style="width:100%;margin-top:4px">다시 잠그기</button>
       </div>
     </details>
     <details id="adminBox">
       <summary>데이터 관리 (관리자)</summary>
       <div class="lockArea">
-        <p class="hint">포켓몬 데이터와 타입·날씨 아이콘을 바꾸려면 비밀번호를 입력하세요.</p>
+        <p class="hint">비밀번호를 입력하세요.</p>
         <div class="field" style="display:flex;gap:8px;margin:8px 0 0">
           <input type="password" class="adminPw" placeholder="비밀번호" autocomplete="current-password" style="flex:1">
           <button class="ghost unlockBtn" style="flex:none;width:72px">확인</button>
@@ -346,6 +367,17 @@ a.brand{text-decoration:none;cursor:pointer}
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
+
+<div id="ivPop" role="dialog" aria-label="개체값 편집" hidden>
+  <div class="ivp-head"><b id="ivpTitle">개체값 편집</b><button type="button" class="ivp-x" id="ivpClose" aria-label="닫기">✕</button></div>
+  <div class="ivp-in">
+    <label><span class="ivl">공격</span><input type="number" id="ivA" min="0" max="15" inputmode="numeric"></label>
+    <label><span class="ivl">방어</span><input type="number" id="ivD" min="0" max="15" inputmode="numeric"></label>
+    <label><span class="ivl">HP</span><input type="number" id="ivH" min="0" max="15" inputmode="numeric"></label>
+  </div>
+  <div class="ivp-res" id="ivpRes"></div>
+  <div class="ivp-btn"><button type="button" class="ghost" id="ivpRevert">원래대로</button><button type="button" class="ghost ivp-ok" id="ivpApply">적용</button></div>
+</div>
 
 <div id="modal" role="dialog" aria-modal="true">
   <div class="inner">
@@ -460,7 +492,16 @@ function buildRows(p,levels,shadow,purify,sort){
   return rows;
 }
 
-const PCT_COLOR={100:'#ff0000',98:'#ff00ff',96:'#9900ff',93:'#ff9900',91:'#2ea81a',89:'#00a3a3',87:'#607d8b'};
+const PCT_COLOR={100:'#ff0000',98:'#ff00ff',96:'#9900ff',93:'#ff9900',91:'#2ea81a',89:'#00a3a3'};
+// 개체값(%) 글자색 (맨 아래 최저치 줄 67%·40%의 파란색은 따로 유지)
+//  100~89%: 위 표 / 87~82%(3성) #5397ff / 80~67%(2성) #5b8c74 / 64~2%(1성 이하) 회색 / 0% 검정
+function pctColor(p){
+  if(PCT_COLOR[p]) return PCT_COLOR[p];
+  if(p===0) return '#000000';
+  if(p>=82) return '#5397ff';
+  if(p>=67) return '#5b8c74';
+  return '#9e9e9e';
+}
 const THEME={normal:'#deeaf6',shadow:'#ece2f9',purify:'#e2f3ea'};
 
 const TYPE_COLOR={노말:'#9fa19f',불꽃:'#fd9d54',물:'#4d90d5',풀:'#63bb5b',전기:'#f3d23b',얼음:'#74cec0',격투:'#d3425f',
@@ -613,6 +654,9 @@ function currentLevels(){
 }
 function isShadow(){return MODES[state.mode].shadow||state.shadow;}
 
+/* ================= 관리자 개체값 편집 상태 (저장되지 않음) ================= */
+let ADMIN=false, IV_EDIT={}, IV_SIG='', CUR=null;
+
 /* ================= 그리기 ================= */
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function imgTag(src,alt){return src.startsWith('data:')?`<img src="${src}" alt="${esc(alt)}">`:`<img src="${esc(src)}" alt="${esc(alt)}" crossorigin="anonymous" onerror="imgRetry(this)">`;}
@@ -656,11 +700,19 @@ function render(){
   const cols=two?'80px 80px 44px 44px 44px 79px':'80px 44px 44px 44px 79px';
 
   const rows=p?buildRows(p,levels,shadow,mode.purify,state.sort):[];
-  const rowHTML=rows.map(r=>{
-    const pc=r.floor?'#0000ff':(PCT_COLOR[r.pct]||'#000');
+  // 관리자 개체값 편집: 포켓몬·표 종류·레벨·그림자·정렬이 바뀌면 편집 내용은 초기화
+  const sig=[state.name,state.mode,levels.join('/'),shadow,state.sort].join('|');
+  if(sig!==IV_SIG){ IV_EDIT={}; IV_SIG=sig; }
+  for(const i in IV_EDIT){ const r=rows[i]; if(!r) continue;
+    const iv=IV_EDIT[i], sum=iv[0]+iv[1]+iv[2];
+    rows[i]={...r,iv,sum,pct:Math.round(sum/45*100),cps:levels.map(l=>calcCP(p,iv,l)),edited:true,floor:false}; }   // 바꾼 줄은 일반 색 규칙으로
+  CUR={p,levels,rows};
+  const ivAttr=i=>ADMIN?` data-act="iv" data-r="${i}"`:'';
+  const rowHTML=rows.map((r,i)=>{
+    const pc=r.floor?'#0000ff':pctColor(r.pct);
     const cpc=r.floor?'#0000ff':r.pct===100?'#ff0000':'#000';
     return `<div class="grid row">${r.cps.map(c=>`<span class="cp" style="color:${cpc}">${c}</span>`).join('')}
-      <span class="iv">${r.iv[0]}</span><span class="iv">${r.iv[1]}</span><span class="iv">${r.iv[2]}</span>
+      <span class="iv"${ivAttr(i)}>${r.iv[0]}</span><span class="iv"${ivAttr(i)}>${r.iv[1]}</span><span class="iv"${ivAttr(i)}>${r.iv[2]}</span>
       <span style="color:${pc}">${r.pct}%</span></div>`;
   }).join('');
 
@@ -936,9 +988,40 @@ $('capture').addEventListener('click',e=>{
   else if(act==='shiny') state.shiny=!state.shiny;
   else if(act==='sort') state.sort=state.sort==='cp'?'default':'cp';
   else if(act==='name'){$('search').scrollIntoView({block:'center'});$('search').focus();return;}
+  else if(act==='iv'){ if(ADMIN) openIvPop(+a.dataset.r); return; }
   else return;
   update();
 });
+
+/* ---- 관리자 개체값 편집 창 ---- */
+let ivRow=-1;
+const clampIv=v=>Math.max(0,Math.min(15,Math.round(+v||0)));
+function ivPreview(){
+  if(!CUR||ivRow<0) return;
+  const iv=[clampIv($('ivA').value),clampIv($('ivD').value),clampIv($('ivH').value)];
+  const pct=Math.round((iv[0]+iv[1]+iv[2])/45*100);
+  $('ivpRes').textContent=CUR.levels.map(l=>`Lv.${l} CP ${calcCP(CUR.p,iv,l)}`).join(' · ')+` · 개체값 ${pct}%`;
+}
+function openIvPop(i){
+  if(!CUR||!CUR.rows[i]) return;
+  ivRow=i; const iv=CUR.rows[i].iv;
+  $('ivA').value=iv[0]; $('ivD').value=iv[1]; $('ivH').value=iv[2];
+  $('ivpTitle').textContent=`${i+1}번째 줄 개체값 편집`;
+  $('ivPop').hidden=false; ivPreview(); $('ivA').select();
+}
+function closeIvPop(){ $('ivPop').hidden=true; ivRow=-1; }
+['ivA','ivD','ivH'].forEach(id=>{
+  $(id).addEventListener('input',ivPreview);
+  $(id).addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('ivpApply').click(); } });
+});
+$('ivpApply').addEventListener('click',()=>{
+  if(ivRow<0) return;
+  IV_EDIT[ivRow]=[clampIv($('ivA').value),clampIv($('ivD').value),clampIv($('ivH').value)];
+  closeIvPop(); render();
+});
+$('ivpRevert').addEventListener('click',()=>{ if(ivRow<0) return; delete IV_EDIT[ivRow]; closeIvPop(); render(); });
+$('ivpClose').addEventListener('click',closeIvPop);
+$('ivResetAll').addEventListener('click',()=>{ IV_EDIT={}; closeIvPop(); render(); toast('개체값 편집을 모두 되돌렸습니다.'); });
 
 /* ---- 데이터 관리 잠금 ---- */
 async function sha256(t){
@@ -950,7 +1033,9 @@ function setLocked(locked){
   document.querySelectorAll('.adminArea').forEach(e=>e.hidden=locked);
   document.querySelectorAll('.lockArea').forEach(e=>e.hidden=!locked);
   try{ locked?sessionStorage.removeItem('ivtable2026-admin'):sessionStorage.setItem('ivtable2026-admin','1'); }catch(e){}
-  if(locked && state.font!=='arial'){ state.font='arial'; update(); }   // 잠그면 기본 글꼴(Arial)로
+  ADMIN=!locked;
+  if(locked){ IV_EDIT={}; closeIvPop(); }
+  if(locked && state.font!=='arial'){ state.font='arial'; update(); } else render();   // 잠그면 기본 글꼴(Arial)·편집 초기화
 }
 async function tryUnlock(box){
   const input=box.querySelector('.adminPw'), msgEl=box.querySelector('.lockMsg');
