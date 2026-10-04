@@ -702,11 +702,16 @@ function render(){
 
   const rows=p?buildRows(p,levels,shadow,mode.purify,state.sort):[];
   // 관리자 개체값 편집: 포켓몬·표 종류·레벨·그림자·정렬이 바뀌면 편집 내용은 초기화
-  const sig=[state.name,state.mode,levels.join('/'),shadow,state.sort].join('|');
+  // 관리자 개체값 편집: 포켓몬이나 표 종류가 바뀔 때만 초기화
+  //  (그림자·색이 다른·정렬·커스텀 레벨을 바꿔도 유지 → 줄 순서가 바뀌어도 원래 개체값으로 같은 줄을 찾아 적용)
+  const sig=[state.name,state.mode].join('|');
   if(sig!==IV_SIG){ IV_EDIT={}; IV_SIG=sig; }
-  for(const i in IV_EDIT){ const r=rows[i]; if(!r) continue;
-    const iv=IV_EDIT[i], sum=iv[0]+iv[1]+iv[2];
-    rows[i]={...r,iv,sum,pct:Math.round(sum/45*100),cps:levels.map(l=>calcCP(p,iv,l)),edited:true,floor:false}; }   // 바꾼 줄은 일반 색 규칙으로
+  rows.forEach((r,i)=>{
+    r.key=r.floor?'floor':r.iv.join('/');
+    const iv=IV_EDIT[r.key]; if(!iv) return;
+    const sum=iv[0]+iv[1]+iv[2];
+    rows[i]={...r,iv,sum,pct:Math.round(sum/45*100),cps:levels.map(l=>calcCP(p,iv,l)),edited:true,floor:false};   // 바꾼 줄은 일반 색 규칙으로
+  });
   CUR={p,levels,rows};
   const ivAttr=i=>ADMIN?` data-act="iv" data-r="${i}"`:'';
   const rowHTML=rows.map((r,i)=>{
@@ -1017,10 +1022,10 @@ function closeIvPop(){ $('ivPop').hidden=true; ivRow=-1; }
 });
 $('ivpApply').addEventListener('click',()=>{
   if(ivRow<0) return;
-  IV_EDIT[ivRow]=[clampIv($('ivA').value),clampIv($('ivD').value),clampIv($('ivH').value)];
+  IV_EDIT[CUR.rows[ivRow].key]=[clampIv($('ivA').value),clampIv($('ivD').value),clampIv($('ivH').value)];
   closeIvPop(); render();
 });
-$('ivpRevert').addEventListener('click',()=>{ if(ivRow<0) return; delete IV_EDIT[ivRow]; closeIvPop(); render(); });
+$('ivpRevert').addEventListener('click',()=>{ if(ivRow<0) return; delete IV_EDIT[CUR.rows[ivRow].key]; closeIvPop(); render(); });
 $('ivpClose').addEventListener('click',closeIvPop);
 $('ivResetAll').addEventListener('click',()=>{ IV_EDIT={}; closeIvPop(); render(); toast('개체값 편집을 모두 되돌렸습니다.'); });
 
