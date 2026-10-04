@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>포켓몬고 개체값 표 만들기 | Project: IV Table 2026</title>
+<!-- 홈 화면 추가 아이콘 (index.html과 같은 폴더에 icon-*.png, manifest.webmanifest 업로드) -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="포켓몬고 개체값표">
+<meta name="application-name" content="포켓몬고 개체값표">
+<meta name="theme-color" content="#ffffff">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&family=Nanum+Gothic:wght@400;700;800&family=Comic+Neue:wght@700&family=Varela+Round&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -201,7 +208,10 @@ a.brand{text-decoration:none;cursor:pointer}
 .brin{display:inline-flex;align-items:baseline;gap:.6em;position:relative}
 .brin .bl{display:inline-block;width:0;height:0;align-self:baseline}
 /* Comic Sans MS가 없는 휴대폰(안드로이드·아이폰)은 비슷한 무료 글꼴 Comic Neue로 대체 */
-.brow a{font-family:"Comic Sans MS","Comic Sans","Comic Neue",cursive;font-weight:700;color:#1155cc}
+.brow a{font-family:"Comic Sans MS","Comic Sans","Comic Neue",cursive;font-weight:700;color:#1155cc;text-decoration:none;position:relative}
+/* 밑줄을 직접 그리고, 글자 주변을 흰색으로 감싸 p·y·g 아래에서 밑줄이 끊기게 (PNG 저장에도 동일) */
+.brow a .ul{position:absolute;left:0;height:max(1px,.07em);background:currentColor;z-index:0}
+.brow a .ut{position:relative;z-index:1;text-shadow:-.08em 0 #fff,.08em 0 #fff,0 -.06em #fff,0 .07em #fff,-.06em -.05em #fff,.06em -.05em #fff,-.06em .06em #fff,.06em .06em #fff}
 .brow .ver{font-family:"Varela Round",Arial,Arimo,sans-serif;font-weight:700}
 .brow .bar{display:inline-block;position:relative;width:max(1.5px,.08em);height:.92em;background:#000;align-self:center}
 .brow .brand{display:flex;align-items:center;position:relative;align-self:center}
@@ -735,6 +745,10 @@ function fitBrow(){
   const W=link.offsetWidth;
   link.textContent=CONFIG.url; link.style.display='inline-block'; link.style.width=W+'px'; link.style.whiteSpace='nowrap';
   const nat=link.scrollWidth; if(nat>W+0.5) link.style.fontSize=(fs*W/nat)+'px';
+  // 밑줄: 글자 폭만큼, 기준선 조금 아래에 직접 그림
+  link.innerHTML=`<i class="ul"></i><span class="ut">${esc(CONFIG.url)}</span>`;
+  { const ut=link.querySelector('.ut'), ul=link.querySelector('.ul'), lfs=parseFloat(getComputedStyle(link).fontSize);
+    ul.style.width=ut.offsetWidth+'px'; ul.style.top=(ut.offsetTop+ut.offsetHeight-0.2*lfs)+'px'; }
   // ② 글자(대문자)의 가운데가 칸 가운데에 오도록 줄 전체 이동
   const mid=row.clientHeight/2;
   inner.style.top=(mid-(inner.offsetTop+bl.offsetTop-0.36*fs))+'px';
