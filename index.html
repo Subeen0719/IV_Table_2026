@@ -71,9 +71,10 @@ summary{cursor:pointer;font-weight:700;font-size:14px;min-height:36px;display:fl
 #dataMsg{font-size:12px;margin-top:6px}
 
 .tip{margin:0 0 8px;font-size:12px;color:#888}
-.headrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-.headrow h1{margin:0!important}
-.subtitle{margin:2px 0 0;font-size:12px;font-weight:400;color:#888}
+.headrow{margin-bottom:12px}
+.headrow h1{margin:0!important;white-space:nowrap}
+.subrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
+.subtitle{margin:0;font-size:12px;font-weight:400;color:#888}
 html[data-theme=dark] .subtitle{color:#aaa}
 .themebtn{min-height:36px;padding:4px 10px;font-size:12px;white-space:nowrap}
 
@@ -242,7 +243,7 @@ a.brand{text-decoration:none;cursor:pointer}
 <body>
 <div class="page">
   <section class="panel top">
-    <div class="headrow"><div><h1>포켓몬고 개체값 표 만들기</h1><p class="subtitle">Project: IV Table 2026</p></div><button type="button" class="ghost themebtn" id="themeBtn" aria-pressed="false">🌙 다크 모드</button></div>
+    <div class="headrow"><h1>포켓몬고 개체값 표 만들기</h1><div class="subrow"><p class="subtitle">Project: IV Table 2026</p><button type="button" class="ghost themebtn" id="themeBtn" aria-pressed="false">🌙 다크 모드</button></div></div>
     <div class="field search-wrap">
       <label for="search">포켓몬</label>
       <input type="search" id="search" placeholder="국문 이름 또는 도감 번호" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" role="combobox" aria-expanded="false" aria-controls="suggest">
@@ -322,7 +323,7 @@ a.brand{text-decoration:none;cursor:pointer}
     </div>
     <div class="field">
       <label>개체값 편집</label>
-      <p class="hint" style="margin:0 0 6px">표의 공격·방어·HP 숫자를 누르면 그 줄의 개체값을 바꿀 수 있어요. CP와 개체값(%)이 바로 다시 계산됩니다. 이 화면에서만 잠시 적용되며, 포켓몬이나 표 종류를 바꾸면 원래대로 돌아갑니다.</p>
+      <p class="hint" style="margin:0 0 6px">표의 공격·방어·HP 숫자를 누르면 그 줄의 개체값을 바꿀 수 있어요. 이 화면에서만 잠시 적용되며, 포켓몬이나 표 종류를 바꾸면 원래대로 돌아가요.</p>
       <button class="ghost" id="ivResetAll" style="width:100%">개체값 편집 모두 되돌리기</button>
     </div>
         <button class="ghost lockBtn" style="width:100%;margin-top:4px">다시 잠그기</button>
@@ -1032,7 +1033,7 @@ function setLocked(locked){
   // 확장 편집·데이터 관리 두 칸이 같은 비밀번호로 함께 열리고 잠김
   document.querySelectorAll('.adminArea').forEach(e=>e.hidden=locked);
   document.querySelectorAll('.lockArea').forEach(e=>e.hidden=!locked);
-  try{ locked?sessionStorage.removeItem('ivtable2026-admin'):sessionStorage.setItem('ivtable2026-admin','1'); }catch(e){}
+  try{ sessionStorage.removeItem('ivtable2026-admin'); }catch(e){}   // 잠금 해제 상태는 저장하지 않음 → 새로고침하면 다시 잠김
   ADMIN=!locked;
   if(locked){ IV_EDIT={}; closeIvPop(); }
   if(locked && state.font!=='arial'){ state.font='arial'; update(); } else render();   // 잠그면 기본 글꼴(Arial)·편집 초기화
@@ -1048,7 +1049,8 @@ document.querySelectorAll('.lockArea').forEach(box=>{
   box.querySelector('.adminPw').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();tryUnlock(box);}});
 });
 document.querySelectorAll('.lockBtn').forEach(b=>b.addEventListener('click',()=>setLocked(true)));
-try{ if(sessionStorage.getItem('ivtable2026-admin')==='1') setLocked(false); }catch(e){}
+// 확장 편집·데이터 관리 칸을 닫으면 바로 다시 잠김
+['extBox','adminBox'].forEach(id=>$(id).addEventListener('toggle',()=>{ if(!$(id).open&&ADMIN) setLocked(true); }));
 
 /* ---- 데이터 ---- */
 $('iconBtn').addEventListener('click',()=>importIcons($('iconPaste').value));
